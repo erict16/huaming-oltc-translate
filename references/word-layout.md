@@ -1,21 +1,44 @@
 # Word / PDF layout (English delivery)
 
-A page that still shows Chinese, 宋体 on English, or a wrapped Yes/No box is not finished.
+A page that still shows Chinese, 宋体 on English, a header overlapping the title row, or a wrapped Yes/No box is not finished.
 
 ## Font
 
-After CN to EN, set Latin text to **Calibri** (ascii / hAnsi / cs). Do not leave 宋体 on English letters. East-Asian font may stay Calibri on an English-only file. Body size follows the source (often 10.5 pt).
+After CN to EN, set Latin text to **Calibri** (ascii / hAnsi / cs). Do not leave 宋体 on English letters. East-Asian font may stay Calibri on an English-only file.
+
+Body Latin is **Calibri 10.5 pt** (`w:sz` 21). User locked Calibri. Do not switch to Times.
+
+Do not run Word COM `Range.Font.Name` on the whole document — that bumped header from 10.5 pt to 15 pt and caused overlap.
+
+## Header
+
+Original Chinese header is ONE line: company name (left/center) + document code like `HMTC/WJ-G-2026` (right). English company name is longer. NEVER leave it as one overflowing centered string.
+
+Use a 2-cell header table:
+
+- left = company + "Tap-changer Test Centre"
+- right = document code
+- both Calibri 10.5 pt (`w:sz` 21)
+- table 100% width, bottom border
+
+Delete empty header paragraphs that still have `w:sz` 30 (15 pt).
+
+After translating a Word form, inspect the first page in the actual file: header vs title row must not collide.
 
 ## Checkboxes
 
-Source `□是  □否` is one line in a narrow column.
+Source `□是  □否` is one line in a ~2.4 cm column.
 
-- Keep **one line**: `□ Yes  □ No`
-- Set the cell `noWrap`. Widen the column a little if Word still wraps.
-- 9 pt is allowed in that column only.
-- Turn off auto-hyperlink. `Yes` must not turn blue or underlined.
+`□ Yes  □ No` on one line WILL wrap in WPS even with cell `noWrap` (WPS ignores `noWrap`). Required layout is TWO paragraphs in the cell:
 
-Do not expand the cell into:
+```
+□ Yes
+□ No
+```
+
+9 pt Calibri, centered. Turn off auto-hyperlink. `Yes` must not turn blue or underlined.
+
+Do not ship a wrap that looks like:
 
 ```
 □ Yes  □
@@ -50,6 +73,7 @@ Keep form numbers, currents, and standard numbers exact. No em-dash.
 
 1. No CJK in any `w:t`.
 2. Every media image viewed; no leftover Chinese labels or untranslated tables.
-3. Checkbox column is one line in a sample row.
-4. Latin font is Calibri (or the source's Latin font if it already had one).
-5. lookup.py `--en` on the body text: locked terms present, banned list empty.
+3. Header is a 2-cell table; first page header does not overlap the title row. No leftover `w:sz` 30 header paragraphs.
+4. Checkbox cell is two centered 9 pt lines (`□ Yes` then `□ No`), not one overflowing line and not `□ Yes  □` / `No`.
+5. Body Latin font is Calibri 10.5 pt (`w:sz` 21). Header same size. Not Times, not 宋体.
+6. lookup.py `--en` on the body text: locked terms present, banned list empty.
