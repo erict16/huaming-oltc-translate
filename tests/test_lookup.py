@@ -44,8 +44,8 @@ class GlossaryTests(unittest.TestCase):
         man = MANIFEST.read_text(encoding="utf-8")
         sv = [ln.split(":", 1)[1].strip() for ln in skill.splitlines() if ln.startswith("version:")]
         mv = [ln.split(":", 1)[1].strip() for ln in man.splitlines() if ln.startswith("version:")]
-        self.assertEqual(sv, ["1.2.0"])
-        self.assertEqual(mv, ["1.2.0"])
+        self.assertEqual(sv, ["1.2.1"])
+        self.assertEqual(mv, ["1.2.1"])
 
     def test_diverter_insert(self) -> None:
         r = run_lookup("切换开关芯子从油室吊出")
@@ -157,7 +157,8 @@ class SafetyScanTests(unittest.TestCase):
         self.assertIn("word-layout.md", text)
         layout = (ROOT / "references" / "word-layout.md").read_text(encoding="utf-8")
         self.assertIn("Calibri", layout)
-        self.assertIn("2610", layout)
+        self.assertIn("Wingdings", layout)
+        self.assertIn("F0A8", layout)
         self.assertIn("tblGrid", layout)
         self.assertIn("PDF", layout)
         self.assertIn("Font.Name", layout)

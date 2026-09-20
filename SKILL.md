@@ -10,7 +10,7 @@ description: >
   华明英文、对照表、diverter switch、tap selector、change-over selector、均压罩、油室、电动机构。
   不触发：选型、跑 oltc、报价、价格、发邮件、报关单据、低压开关柜。
 allowed-tools: Read, Bash
-version: 1.2.0
+version: 1.2.1
 ---
 
 # 华明分接开关资料翻译
@@ -41,7 +41,7 @@ _以下是为 AI 助手准备的执行说明。_
 6. 英文禁止破折号（U+2014 / U+2013）。禁止 corona caps、crimped connector、diverter switch top cover 这类锁死反例。
 7. 不跑选型、不出价格、不发邮件、不改用户磁盘上的原件，除非用户点名要写某个文件。
 8. 译完用 lookup 的 `--en` 自检；缺锁死词或命中禁词就改，不要交出去。
-9. 交 Word 前按 `references/word-layout.md` 做完，并 **导出 PDF 看首页、勾选页、数据表页**。页眉两格表；勾选一行 `☐ Yes  ☐ No`（U+2610，tblGrid 加宽）；数据表用 Word 真表，不要用超高图片去盖页眉。页面上还能看见中文就还没完。
+9. 交 Word 前按 `references/word-layout.md` 做完，并 **导出 PDF 看首页、勾选页、数据表页**。页眉两格表；勾选一行 Yes/No：Checkbox = Word `w:sym` Wingdings char F0A8（空框），独立 run、仅 Wingdings、10.5pt（`w:sz` 21）；后随 ` Yes  ` / ` No` 另 run、Calibri 10.5pt。Done 列 tblGrid 约 2200 dxa，一行不叠。禁止 U+2610、禁止把 U+25A1 当交付英文框、禁止 Segoe UI Symbol、禁止给 Wingdings run 套 Calibri / Font.Name。数据表用 Word 真表，不要用超高图片去盖页眉。页面上还能看见中文就还没完。
 
 ## 怎么译
 
@@ -69,7 +69,7 @@ _以下是为 AI 助手准备的执行说明。_
 - [ ] 句子能单独读完，不是词对词堆砌
 - [ ] 每个 media 图都看过：没有中文表、没有中文图注
 - [ ] 页眉两格表，公司名+Test Centre 左、文号右；首页页眉不压标题行
-- [ ] 勾选格一行 `☐ Yes  ☐ No`（U+2610 + Calibri 10.5 pt）；Done 列 **tblGrid** 约 2200 dxa；不是折行，不用 □
+- [ ] 勾选格一行：Wingdings `w:sym` F0A8 空框（独立 run）+ Calibri ` Yes  ` / ` No`；Done 列 **tblGrid** 约 2200 dxa；禁止 U+2610 / U+25A1 / Segoe UI Symbol；PDF 上是空勾选框，不是带框问号、不是几何方块
 - [ ] 数据表是 Word 真表（或原尺寸图片），PDF 上不被裁切、不压页眉
 - [ ] 正文和页眉 Calibri 10.5 pt（sz 21）；禁止整篇 Word COM 改 Font.Name
 - [ ] 已导出 PDF 看过首页 / 勾选页 / 数据表页

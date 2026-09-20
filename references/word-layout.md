@@ -26,13 +26,20 @@ Landscape A4 content height is about 14.6 cm after 1800 twip margins. Nothing in
 
 ## Checkboxes (`□是  □否`)
 
-WPS ignores `noWrap`. One paragraph of `□ Yes  □ No` (U+25A1) wraps to `□ Yes  □` / `No` and looks like a geometry square.
+Chinese originals use U+25A1 □ in 宋体, one run `□是  □否`. That must not ship as the English box.
+
+WPS ignores `noWrap`. Plain U+25A1 in Calibri wraps to `□ Yes  □` / `No` and looks like a geometry square. U+2610 BALLOT BOX in Segoe UI Symbol often has no glyph on Eric’s machine and paints a boxed question mark (“? Done”) — that looks like an encoding/AI fail.
 
 Required:
 
-1. Ballot box **U+2610** `☐` in Segoe UI Symbol 12 pt, then Calibri 10.5 pt ` Yes  ☐ No`.
-2. Widen the Done column in **`tblGrid`** (not only `tcW`) to about **2200 dxa**. Word uses the grid for column width.
-3. Keep it **one line**, left-right.
+1. Checkbox = Word `w:sym` Wingdings char F0A8 (empty box). Own run. Font Wingdings only. Size 10.5pt (`w:sz` 21), same as body.
+2. Following text ` Yes  ` / ` No` stays Calibri 10.5pt in separate runs.
+3. Widen the Done column in **`tblGrid`** (not only `tcW`) to about **2200 dxa**. Word uses the grid for column width.
+4. Keep it **one line**, left-right. Not stacked.
+
+NEVER U+2610, NEVER U+25A1 as the shipped English box (25A1 was the wrap/geometry complaint; 2610 is tofu).
+NEVER Segoe UI Symbol.
+NEVER apply Calibri / Font.Name to the Wingdings run (it becomes garbage).
 
 Do not stack Yes over No. Nested 2-cell tables are a last fallback if it still wraps after the grid is widened.
 
@@ -78,7 +85,7 @@ Word COM `SaveAs` PDF, then look at page 1, a checkbox page, and the data-table 
 1. No CJK in any `w:t`.
 2. Every media image viewed.
 3. Header is a 2-cell table; it does not sit on the title row.
-4. `☐ Yes  ☐ No` is one line; boxes are ballot boxes, not `□`.
+4. Yes/No is one line; boxes are Wingdings `w:sym` F0A8 empty checkboxes — never a boxed question mark, never a geometry square, never U+2610 / U+25A1 / Segoe UI Symbol.
 5. Data tables are readable Word tables (or pictures at source size), not clipped, not covering the header.
 6. Body and header are Calibri 10.5 pt.
 7. `lookup.py --en` on the body: locks present, banned list empty.
