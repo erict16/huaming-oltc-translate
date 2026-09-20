@@ -19,7 +19,7 @@ python scripts/lookup.py --text "检查油室里的切换开关芯子"
 python tests/test_lookup.py
 ```
 
-查词只读本包 `references/glossary.tsv`，不联网。
+查词只读本包 `references/glossary.md`，不联网。
 
 ## 词表
 
