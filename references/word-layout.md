@@ -27,23 +27,17 @@ After translating a Word form, inspect the first page in the actual file: header
 
 ## Checkboxes
 
-Source `□是  □否` is one line in a ~2.4 cm column.
+Source `□是  □否` is left-right in a narrow column. English `□ Yes  □ No` as one paragraph wraps in WPS even with `noWrap`. Two stacked lines also look wrong.
 
-`□ Yes  □ No` on one line WILL wrap in WPS even with cell `noWrap` (WPS ignores `noWrap`). Required layout is TWO paragraphs in the cell:
+Required: a **nested 2-cell table** inside the cell, no borders:
 
-```
-□ Yes
-□ No
-```
+| □ Yes | □ No |
 
-9 pt Calibri, centered. Turn off auto-hyperlink. `Yes` must not turn blue or underlined.
+- 9 pt Calibri, centered, `noWrap` on the inner cells
+- Parent column about 2000 dxa (~3.5 cm). Do not steal the whole step column.
+- The cell must still end with an empty paragraph after the nested table.
 
-Do not ship a wrap that looks like:
-
-```
-□ Yes  □
-No
-```
+Do not ship a wrap (`□ Yes  □` then `No`) and do not stack Yes over No.
 
 ## Figures and tables inside pictures
 
@@ -74,6 +68,6 @@ Keep form numbers, currents, and standard numbers exact. No em-dash.
 1. No CJK in any `w:t`.
 2. Every media image viewed; no leftover Chinese labels or untranslated tables.
 3. Header is a 2-cell table; first page header does not overlap the title row. No leftover `w:sz` 30 header paragraphs.
-4. Checkbox cell is two centered 9 pt lines (`□ Yes` then `□ No`), not one overflowing line and not `□ Yes  □` / `No`.
+4. Checkbox cell is a nested 2-cell table (`□ Yes` | `□ No`), 9 pt centered. Not one wrapping paragraph and not two stacked lines.
 5. Body Latin font is Calibri 10.5 pt (`w:sz` 21). Header same size. Not Times, not 宋体.
 6. lookup.py `--en` on the body text: locked terms present, banned list empty.

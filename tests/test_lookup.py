@@ -44,8 +44,8 @@ class GlossaryTests(unittest.TestCase):
         man = MANIFEST.read_text(encoding="utf-8")
         sv = [ln.split(":", 1)[1].strip() for ln in skill.splitlines() if ln.startswith("version:")]
         mv = [ln.split(":", 1)[1].strip() for ln in man.splitlines() if ln.startswith("version:")]
-        self.assertEqual(sv, ["1.1.1"])
-        self.assertEqual(mv, ["1.1.1"])
+        self.assertEqual(sv, ["1.1.2"])
+        self.assertEqual(mv, ["1.1.2"])
 
     def test_diverter_insert(self) -> None:
         r = run_lookup("切换开关芯子从油室吊出")
