@@ -29,15 +29,9 @@ After translating a Word form, inspect the first page in the actual file: header
 
 Source `□是  □否` is left-right in a narrow column. English `□ Yes  □ No` as one paragraph wraps in WPS even with `noWrap`. Two stacked lines also look wrong.
 
-Required: a **nested 2-cell table** inside the cell, no borders:
+Required: **one line** `☐ Yes  ☐ No` (U+2610 ballot box in Segoe UI Symbol 12 pt + Calibri 10.5 pt). Widen the Done `tblGrid` column to about 2200 dxa. Do not use U+25A1 `□` (looks like a geometry square, not a form box).
 
-| □ Yes | □ No |
-
-- 9 pt Calibri, centered, `noWrap` on the inner cells
-- Parent column about 2000 dxa (~3.5 cm). Do not steal the whole step column.
-- The cell must still end with an empty paragraph after the nested table.
-
-Do not ship a wrap (`□ Yes  □` then `No`) and do not stack Yes over No.
+Do not ship a wrap (`☐ Yes  ☐` then `No`) and do not stack Yes over No. Nested 2-cell tables are a fallback only if one line still wraps after widening the grid.
 
 ## Figures and tables inside pictures
 
