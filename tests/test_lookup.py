@@ -34,6 +34,7 @@ class GlossaryTests(unittest.TestCase):
             GLOSSARY,
             ROOT / "references" / "locks.md",
             ROOT / "references" / "voice.md",
+            ROOT / "references" / "word-layout.md",
             ROOT / "assets" / "icon.png",
         ):
             self.assertTrue(p.is_file(), p)
@@ -43,8 +44,8 @@ class GlossaryTests(unittest.TestCase):
         man = MANIFEST.read_text(encoding="utf-8")
         sv = [ln.split(":", 1)[1].strip() for ln in skill.splitlines() if ln.startswith("version:")]
         mv = [ln.split(":", 1)[1].strip() for ln in man.splitlines() if ln.startswith("version:")]
-        self.assertEqual(sv, ["1.0.0"])
-        self.assertEqual(mv, ["1.0.0"])
+        self.assertEqual(sv, ["1.1.0"])
+        self.assertEqual(mv, ["1.1.0"])
 
     def test_diverter_insert(self) -> None:
         r = run_lookup("切换开关芯子从油室吊出")
@@ -150,6 +151,14 @@ class SafetyScanTests(unittest.TestCase):
         text = SKILL.read_text(encoding="utf-8")
         for key in ("slug:", "displayName:", "summary:", "license:", "version:"):
             self.assertIn(key, text)
+
+    def test_layout_rules_named(self) -> None:
+        text = SKILL.read_text(encoding="utf-8")
+        self.assertIn("word-layout.md", text)
+        layout = (ROOT / "references" / "word-layout.md").read_text(encoding="utf-8")
+        self.assertIn("Calibri", layout)
+        self.assertIn("noWrap", layout)
+        self.assertIn("Redraw", layout)
 
 
 if __name__ == "__main__":
