@@ -1,67 +1,84 @@
 # Word / PDF layout (English delivery)
 
-A page that still shows Chinese, 宋体 on English, a header overlapping the title row, or a wrapped Yes/No box is not finished.
+A page that still shows Chinese, 宋体 on English, a header over the title row, a wrapped Yes/No box, or a clipped data table is not finished.
+
+Do not hand over until you have exported PDF and looked at the first pages.
 
 ## Font
 
-After CN to EN, set Latin text to **Calibri** (ascii / hAnsi / cs). Do not leave 宋体 on English letters. East-Asian font may stay Calibri on an English-only file.
+Latin text: **Calibri 10.5 pt** (`w:sz` 21). User locked Calibri. Do not switch to Times.
 
-Body Latin is **Calibri 10.5 pt** (`w:sz` 21). User locked Calibri. Do not switch to Times.
-
-Do not run Word COM `Range.Font.Name` on the whole document — that bumped header from 10.5 pt to 15 pt and caused overlap.
+Do **not** run Word COM `Range.Font.Name` on the whole document. That bumped the header from 10.5 pt to 15 pt and made it overlap the body.
 
 ## Header
 
-Original Chinese header is ONE line: company name (left/center) + document code like `HMTC/WJ-G-2026` (right). English company name is longer. NEVER leave it as one overflowing centered string.
+Chinese source is one line: company + code (`HMTC/WJ-G-2026`). English company name is longer and will wrap.
 
-Use a 2-cell header table:
+Use a **2-cell header table** in every `header*.xml`:
 
-- left = company + "Tap-changer Test Centre"
-- right = document code
-- both Calibri 10.5 pt (`w:sz` 21)
-- table 100% width, bottom border
+- left: `Shanghai Huaming Power Equipment Co., Ltd.` then `Tap-changer Test Centre`
+- right: document code, right-aligned, vertical center
+- both Calibri 10.5 pt
+- table 100% width, bottom border only
+- delete empty header paragraphs that still have `w:sz` 30
 
-Delete empty header paragraphs that still have `w:sz` 30 (15 pt).
+Landscape A4 content height is about 14.6 cm after 1800 twip margins. Nothing in the header may spill into that.
 
-After translating a Word form, inspect the first page in the actual file: header vs title row must not collide.
+## Checkboxes (`□是  □否`)
 
-## Checkboxes
+WPS ignores `noWrap`. One paragraph of `□ Yes  □ No` (U+25A1) wraps to `□ Yes  □` / `No` and looks like a geometry square.
 
-Source `□是  □否` is left-right in a narrow column. English `□ Yes  □ No` as one paragraph wraps in WPS even with `noWrap`. Two stacked lines also look wrong.
+Required:
 
-Required: **one line** `☐ Yes  ☐ No` (U+2610 ballot box in Segoe UI Symbol 12 pt + Calibri 10.5 pt). Widen the Done `tblGrid` column to about 2200 dxa. Do not use U+25A1 `□` (looks like a geometry square, not a form box).
+1. Ballot box **U+2610** `☐` in Segoe UI Symbol 12 pt, then Calibri 10.5 pt ` Yes  ☐ No`.
+2. Widen the Done column in **`tblGrid`** (not only `tcW`) to about **2200 dxa**. Word uses the grid for column width.
+3. Keep it **one line**, left-right.
 
-Do not ship a wrap (`☐ Yes  ☐` then `No`) and do not stack Yes over No. Nested 2-cell tables are a fallback only if one line still wraps after widening the grid.
+Do not stack Yes over No. Nested 2-cell tables are a last fallback if it still wraps after the grid is widened.
 
-## Figures and tables inside pictures
+## Data tables that were pictures
 
-`w:t` having no Chinese is not enough. Open every `word/media/*` image.
+Do not leave a Chinese table with an English caption.
+
+**Prefer a real Word table.** Two conductor charts (Table 1 / Table 2) sit side by side in the source cell. Rebuild them as Word tables, 9 pt body, 8 pt notes, Calibri. Do not paste a 17 cm-tall PNG: landscape content is only ~14.6 cm tall and the picture will cover the header and clip.
+
+If you must keep a picture:
+
+- keep the source display size (those two charts were ~10 cm × 8 cm each, side by side)
+- fill that box; do not leave a postage-stamp table in white space
+- never set `wp:extent` taller than the remaining page
+
+Look at the PDF. If the last two rows or footnotes sit alone on the next page, tighten row height or start the charts on a new page.
+
+## Other figures
+
+`w:t` with no Chinese is not enough. Open every `word/media/*` image.
 
 | What you see | What to do |
 |--------------|------------|
-| Data table (conductor sizes, limits, footnotes) | Redraw an English table (PIL/Word table) and replace the image. Do not leave a Chinese table with an English caption. Display the new table **at least as large as the source figure** (landscape conductor tables ~12–14 cm wide, tall enough that 11 pt body type is readable). Do not stamp a 21-row table into a 10 cm × 8 cm box. |
-| CAD / photo with a short label (油温监测点, 加压端, 接地) | Replace the label in the image. Keep the drawing. |
-| Circuit / sequence diagram with a Chinese legend | Replace the legend; keep the geometry and the numbers. |
+| CAD / photo label (油温监测点, 加压端, 接地) | Replace the label in the image |
+| Circuit / sequence legend | Replace the legend; keep geometry and numbers |
 
-Visible Chinese on a figure is a fail. Ask the user only if a stamp or handwritten mark cannot be read.
+Visible Chinese on a figure is a fail.
 
-## Phrasing on test procedures
-
-Write like IEC 60214 / Huaming OI, not like a machine calque.
+## Phrasing (test procedures)
 
 - `<= +/- 3%` → `within +/- 3%`
 - `do not leave at once` → `do not leave immediately`
-- `raise button` → name the control in plain words, or just `raise the current smoothly`
+- `raise button` → `raise the current smoothly`
 - `take thermal stability as reached` → `consider the temperature stable`
 - `Judge the result against` → `Assess the result against`
 
-Keep form numbers, currents, and standard numbers exact. No em-dash.
+No em-dash. Form numbers, currents, and standard numbers stay exact.
 
-## Self-check before handing over
+## Self-check (export PDF)
+
+Word COM `SaveAs` PDF, then look at page 1, a checkbox page, and the data-table page.
 
 1. No CJK in any `w:t`.
-2. Every media image viewed; no leftover Chinese labels or untranslated tables.
-3. Header is a 2-cell table; first page header does not overlap the title row. No leftover `w:sz` 30 header paragraphs.
-4. Checkbox cell is a nested 2-cell table (`□ Yes` | `□ No`), 9 pt centered. Not one wrapping paragraph and not two stacked lines.
-5. Body Latin font is Calibri 10.5 pt (`w:sz` 21). Header same size. Not Times, not 宋体.
-6. lookup.py `--en` on the body text: locked terms present, banned list empty.
+2. Every media image viewed.
+3. Header is a 2-cell table; it does not sit on the title row.
+4. `☐ Yes  ☐ No` is one line; boxes are ballot boxes, not `□`.
+5. Data tables are readable Word tables (or pictures at source size), not clipped, not covering the header.
+6. Body and header are Calibri 10.5 pt.
+7. `lookup.py --en` on the body: locks present, banned list empty.

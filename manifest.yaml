@@ -1,5 +1,5 @@
 name: huaming-oltc-translate
-version: 1.1.2
+version: 1.2.0
 description: 把华明有载/无载分接开关说明书、技术函、外形图注和订货规范译成与公司对照表一致的英文。词从表里来，句子按工程师说明书写。
 display_name: 华明分接开关资料翻译
 display_name_en: Huaming Tap-Changer Document Translation
