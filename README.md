@@ -30,7 +30,6 @@ python tests/test_lookup.py
 
 ## 发布形态
 
-- 讯飞 SkillHub / Grok：本仓库根目录（可带 `assets/icon.png`）
-- skillhub.cn：`node scripts/stage-cn.mjs` 去掉 png、LICENSE、scripts、tests（他们白名单拒这些），图标在网页后台传
+只发 **skillhub.cn**（`node scripts/stage-cn.mjs` 去掉 png、LICENSE、scripts、tests）。不要发讯飞 SkillHub。Grok 用本仓库根目录即可。CLI 发完后网页后台把分类改回「行业专业」、图标改回 HM。
 
 版本号以 `SKILL.md` 的 `version` 为准，须与 `manifest.yaml` 相同。
