@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 LOOKUP = ROOT / "scripts" / "lookup.py"
 SKILL = ROOT / "SKILL.md"
 MANIFEST = ROOT / "manifest.yaml"
-GLOSSARY = ROOT / "references" / "glossary.tsv"
+GLOSSARY = ROOT / "references" / "glossary.md"
 
 
 def run_lookup(text: str, en: str | None = None) -> dict:

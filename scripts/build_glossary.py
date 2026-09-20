@@ -6,7 +6,6 @@ company workbook changes. Output is UTF-8 TSV, no OneDrive paths inside.
 """
 from __future__ import annotations
 
-import csv
 import re
 import sys
 from pathlib import Path
@@ -14,7 +13,7 @@ from pathlib import Path
 from openpyxl import load_workbook
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "references" / "glossary.tsv"
+OUT = ROOT / "references" / "glossary.md"
 
 SKIP_CN = {
     "其它：",
@@ -203,11 +202,29 @@ def merge(workbooks: list[Path]) -> list[dict]:
 def main() -> None:
     rows = merge([Path(a) for a in sys.argv[1:]])
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    with OUT.open("w", encoding="utf-8", newline="") as f:
-        w = csv.writer(f, delimiter="\t", lineterminator="\n")
-        w.writerow(["cn", "en", "alt", "pos", "note", "source", "lock"])
-        for r in rows:
-            w.writerow([r["cn"], r["en"], r["alt"], r["pos"], r["note"], r["source"], r["lock"]])
+    def esc(s: str) -> str:
+        return (s or "").replace("|", "\\|").replace("\n", " ")
+
+    lines = [
+        "# Huaming OLTC glossary",
+        "",
+        "Source: Huaming switch terminology workbook (2026-01-30) plus OS locks.",
+        "Lock=1 wins over the model. Do not invent terms.",
+        "",
+        "| cn | en | alt | lock | note |",
+        "|----|----|-----|------|------|",
+    ]
+    for r in rows:
+        lines.append(
+            "| {cn} | {en} | {alt} | {lock} | {note} |".format(
+                cn=esc(r["cn"]),
+                en=esc(r["en"]),
+                alt=esc(r["alt"]),
+                lock=esc(r["lock"]),
+                note=esc(r["note"]),
+            )
+        )
+    OUT.write_text("\n".join(lines) + "\n", encoding="utf-8")
     locked = sum(1 for r in rows if r["lock"] == "1")
     print(f"wrote {len(rows)} terms ({locked} locks) -> {OUT.relative_to(ROOT)}")
 

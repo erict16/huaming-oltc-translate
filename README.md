@@ -25,7 +25,7 @@ python tests/test_lookup.py
 
 - 主源：华明《开关专业术语中英对照表》（2026-01-30）
 - 锁死项：`references/locks.md`（OS 字段和假朋友，压过表里的两可译法）
-- 全文：`references/glossary.tsv`
+- 全文：`references/glossary.md`
 
 ## 发布形态
 

@@ -21,6 +21,7 @@ cpSync(root, dir, {
     const base = path.basename(src);
     if ([".gitignore", ".gitattributes", "LICENSE"].includes(base)) return false;
     if (base.endsWith(".pyc") || base === "__pycache__") return false;
+    if (base.endsWith(".tsv") || base.endsWith(".xlsx")) return false;
     return true;
   },
 });

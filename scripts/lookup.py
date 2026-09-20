@@ -3,39 +3,48 @@
 from __future__ import annotations
 
 import argparse
-import csv
 import json
 import re
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-GLOSSARY = ROOT / "references" / "glossary.tsv"
+GLOSSARY = ROOT / "references" / "glossary.md"
 
 # Refuse to follow paths outside the skill pack for the table itself.
 if not GLOSSARY.is_file():
-    sys.stderr.write("glossary.tsv missing next to this skill; reinstall the pack\n")
+    sys.stderr.write("glossary.md missing next to this skill; reinstall the pack\n")
     sys.exit(2)
 
 
 def load_terms() -> list[dict]:
     rows = []
-    with GLOSSARY.open(encoding="utf-8", newline="") as f:
-        for row in csv.DictReader(f, delimiter="\t"):
-            cn = (row.get("cn") or "").strip()
-            en = (row.get("en") or "").strip()
-            if not cn or not en:
-                continue
-            rows.append(
-                {
-                    "cn": cn,
-                    "en": en,
-                    "alt": (row.get("alt") or "").strip(),
-                    "lock": (row.get("lock") or "0").strip() == "1",
-                    "note": (row.get("note") or "").strip(),
-                    "source": (row.get("source") or "").strip(),
-                }
-            )
+    header = None
+    for line in GLOSSARY.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line.startswith("|"):
+            continue
+        cells = [c.strip().replace("\\|", "|") for c in line.strip("|").split("|")]
+        if header is None:
+            header = [c.lower() for c in cells]
+            continue
+        if all(set(c) <= set("-: ") for c in cells):
+            continue
+        rec = dict(zip(header, cells))
+        cn = (rec.get("cn") or "").strip()
+        en = (rec.get("en") or "").strip()
+        if not cn or not en:
+            continue
+        rows.append(
+            {
+                "cn": cn,
+                "en": en,
+                "alt": (rec.get("alt") or "").strip(),
+                "lock": (rec.get("lock") or "0").strip() == "1",
+                "note": (rec.get("note") or "").strip(),
+                "source": (rec.get("source") or "").strip(),
+            }
+        )
     rows.sort(key=lambda r: len(r["cn"]), reverse=True)
     return rows
 

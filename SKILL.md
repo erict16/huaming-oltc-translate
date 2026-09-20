@@ -35,7 +35,7 @@ _以下是为 AI 助手准备的执行说明。_
 
 1. 动手前读 `references/locks.md`。锁死项压过模型习惯译法。
 2. 再读 `references/voice.md` 和 `references/examples.md`。
-3. 对照 `references/glossary.tsv`（中英对照，约 370 条）。有 Python 时在本 skill 目录跑 `python scripts/lookup.py --json --text "<中文>"`；没有脚本的安装包就直接读 TSV。禁止联网查词，禁止另装翻译包。
+3. 对照 `references/glossary.md`（中英对照，约 380 条）。有 Python 时在本 skill 目录跑 `python scripts/lookup.py --json --text "<中文>"`；没有脚本的安装包就直接读 glossary.md。禁止联网查词，禁止另装翻译包。
 4. 表里没有的词：保留中文，用一句问用户，不要猜。IEC 条款、试验数值、时间（例如 80 ms）原文没有就不要补。
 5. 全文同一中文只用一个英文。型号、图号、电流、弯管字母 R/S/Q/E1/E2/W 原样保留。
 6. 英文禁止破折号（U+2014 / U+2013）。禁止 corona caps、crimped connector、diverter switch top cover 这类锁死反例。
