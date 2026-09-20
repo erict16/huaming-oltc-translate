@@ -45,7 +45,7 @@ Do not ship a wrap (`□ Yes  □` then `No`) and do not stack Yes over No.
 
 | What you see | What to do |
 |--------------|------------|
-| Data table (conductor sizes, limits, footnotes) | Redraw an English table (PIL/Word table) and replace the image. Do not leave a Chinese table with an English caption. |
+| Data table (conductor sizes, limits, footnotes) | Redraw an English table (PIL/Word table) and replace the image. Do not leave a Chinese table with an English caption. Display the new table **at least as large as the source figure** (landscape conductor tables ~12–14 cm wide, tall enough that 11 pt body type is readable). Do not stamp a 21-row table into a 10 cm × 8 cm box. |
 | CAD / photo with a short label (油温监测点, 加压端, 接地) | Replace the label in the image. Keep the drawing. |
 | Circuit / sequence diagram with a Chinese legend | Replace the legend; keep the geometry and the numbers. |
 
