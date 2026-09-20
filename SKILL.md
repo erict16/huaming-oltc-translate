@@ -10,7 +10,7 @@ description: >
   华明英文、对照表、diverter switch、tap selector、change-over selector、均压罩、油室、电动机构。
   不触发：选型、跑 oltc、报价、价格、发邮件、报关单据、低压开关柜。
 allowed-tools: Read, Bash
-version: 1.2.1
+version: 1.2.2
 ---
 
 # 华明分接开关资料翻译
@@ -46,7 +46,7 @@ _以下是为 AI 助手准备的执行说明。_
 ## 怎么译
 
 1. 看清方向：默认中 → 英。用户要英 → 中时用同一张表反过来查。
-2. 看清文体：步骤用祈使句；原理用陈述句；图注和表单元格保持短，不要扩成段落。
+2. 看清文体：步骤用祈使句；原理用陈述句；图注和表单元格保持短，不要扩成段落。中文一步里用逗号串起来的动作，英文拆成短句，不要一句对一句（见 `references/voice.md`）。
 3. 先扫术语，再写句子。长词优先（「切换开关芯子」整段吃掉，不要拆成「切换」+「开关」+「芯子」）。
 4. 组合式 / 复合式 / 笼式 / 鼓式 按 locks 译成 combined / compound / cage type / drum type。不要把复合式写成 combined。
 5. 气体继电器是 Buchholz relay，保护继电器是 protective relay，两套东西。
@@ -66,7 +66,7 @@ _以下是为 AI 助手准备的执行说明。_
 - [ ] 无 em-dash / en-dash
 - [ ] 无 corona cap、crimped connector、diverter switch top cover
 - [ ] 型号与数字未改
-- [ ] 句子能单独读完，不是词对词堆砌
+- [ ] 句子能单独读完，不是词对词堆砌；步骤是短句，不是中文逗号链的直译
 - [ ] 每个 media 图都看过：没有中文表、没有中文图注
 - [ ] 页眉两格表，公司名+Test Centre 左、文号右；首页页眉不压标题行
 - [ ] 勾选格一行：Wingdings `w:sym` F0A8 空框（独立 run）+ Calibri ` Yes  ` / ` No`；Done 列 **tblGrid** 约 2200 dxa；禁止 U+2610 / U+25A1 / Segoe UI Symbol；PDF 上是空勾选框，不是带框问号、不是几何方块

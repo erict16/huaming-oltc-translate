@@ -10,6 +10,7 @@ A factory engineer explaining a tap-changer to another engineer. Short complete 
 
 - Keep the source structure: headings, numbered steps, figure captions, table cells.
 - One action per sentence in procedures: "Drain the oil from the oil compartment." not "It is recommended that oil drainage be performed."
+- Do not copy Chinese sentence length. A Chinese step often stacks several actions with commas. Split them in English. Keep the step number and the cell. Keep numbers, form codes, and locked terms.
 - Keep numbers, units, type strings, and drawing codes exact.
 - Use the same English term for the same Chinese term in the whole document.
 - First mention of OLTC / MDU / DGA may keep the abbreviation in parentheses; after that use one form.
@@ -24,6 +25,8 @@ A factory engineer explaining a tap-changer to another engineer. Short complete 
 - Emoji.
 - Adding facts the source does not state (IEC clause numbers, test values, "usually 80 ms").
 - Turning a Chinese 我/本公司 into English "you should" advice.
+- Mapping one Chinese comma-chain onto one English sentence. If you cannot read a step aloud in one breath, split it.
+- Legal stacking such as "hereinafter the test unit".
 
 ## Sentence models (from Huaming OI)
 
@@ -43,4 +46,4 @@ Target:
 
 > After lifting the diverter switch insert out of the oil compartment, inspect the transition resistors and the main switching contacts.
 
-If the Chinese is a caption or table cell, keep it a caption or cell. Do not pad it into a paragraph.
+If the Chinese is a caption or table cell, keep it a caption or cell. Do not pad it into a paragraph. A stacked 步骤 cell is split in `examples.md` §4.

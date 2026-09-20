@@ -44,8 +44,8 @@ class GlossaryTests(unittest.TestCase):
         man = MANIFEST.read_text(encoding="utf-8")
         sv = [ln.split(":", 1)[1].strip() for ln in skill.splitlines() if ln.startswith("version:")]
         mv = [ln.split(":", 1)[1].strip() for ln in man.splitlines() if ln.startswith("version:")]
-        self.assertEqual(sv, ["1.2.1"])
-        self.assertEqual(mv, ["1.2.1"])
+        self.assertEqual(sv, ["1.2.2"])
+        self.assertEqual(mv, ["1.2.2"])
 
     def test_diverter_insert(self) -> None:
         r = run_lookup("切换开关芯子从油室吊出")
@@ -162,6 +162,13 @@ class SafetyScanTests(unittest.TestCase):
         self.assertIn("tblGrid", layout)
         self.assertIn("PDF", layout)
         self.assertIn("Font.Name", layout)
+
+    def test_voice_splits_chinese_length(self) -> None:
+        voice = (ROOT / "references" / "voice.md").read_text(encoding="utf-8")
+        self.assertIn("Do not copy Chinese sentence length", voice)
+        self.assertIn("hereinafter the test unit", voice)
+        skill = SKILL.read_text(encoding="utf-8")
+        self.assertIn("不要一句对一句", skill)
 
 
 if __name__ == "__main__":

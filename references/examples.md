@@ -35,3 +35,15 @@ Wrong: "The integrated on-load switch is made up of a changeover switch, a tap c
 > Inspect the protective relay and the terminal screen caps on the OLTC head cover. The Buchholz relay is on the transformer tank; do not confuse it with the OLTC protective relay. Replace the crimp sleeve after it has burned open.
 
 Wrong: "Check the corona caps on the diverter switch top cover. Replace the crimped connector."
+
+## 4. Procedure cell (do not copy Chinese length)
+
+中文（一步里几件事用逗号串起来）：
+
+> 将切换开关芯子落入油室后，连接切换开关底部与分接选择器，再用导电杆连接外部端子。
+
+英文：
+
+> Lower the diverter switch insert into the oil compartment. Connect the bottom of the diverter switch to the tap selector. Connect the external terminals with the conductive bars.
+
+Wrong: one English sentence that tracks the Chinese commas.
