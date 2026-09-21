@@ -2,22 +2,23 @@
 name: huaming-oltc-translate
 slug: huaming-oltc-translate
 displayName: 华明翻译助手
-summary: 把华明分接开关说明书、技术函、图注、订货规范在中文、英文、俄文、西语之间互译。词从表里来，句子按工程师说明书写。
+summary: 华明分接开关说明书、技术函、图注、订货规范，中英俄西互译。词从表里来，句子按工程师说明书写，交 Word 按说明书版式（页眉、勾选、真表）。表里没有的先问。
 license: MIT
 description: >
-  华明翻译助手：把华明说明书、技术函、外形图注、OS 字段在中文、英文、俄文、西语之间互译。
-  词跟公司对照表走，句子按工程师说明书写。
+  华明翻译助手。把分接开关说明书、技术函、图注、订货规范在中英俄西之间互译。
+  词从表里来，句子按工程师说明书写，交 Word 按说明书版式（页眉、勾选、真表）。表里没有的先问。
   触发：翻译说明书、技术函、OS 英文、分接开关翻译、OLTC translation、tap-changer、
   华明翻译、对照表、diverter switch、tap selector、change-over selector、
-  均压罩、油室、电动机构、перевод РПН、traducir cambiador de tomas、俄文、西语。
+  均压罩、油室、电动机构、перевод РПН、traducir cambiador de tomas、俄文、西语、
+  Word 版式、页眉、勾选。
   不触发：选型、跑 oltc、报价、价格、发邮件、报关单据、低压开关柜。
 allowed-tools: Read, Bash
-version: 1.3.1
+version: 1.3.2
 ---
 
 # 华明翻译助手
 
-把华明有载 / 无载分接开关的说明书、技术函、外形图注和订货规范，在中文、英文、俄文、西语之间互译。用词跟公司对照表走，句子按工程师说明书写，不写宣传腔。表里没有的词先问，不要猜。
+把华明有载、无载分接开关的说明书、技术函、图注和订货规范，在中文、英文、俄文、西语之间互译。用词跟对照表走，句子写成工程师说明书那样，不写宣传腔。交 Word 就按华明说明书的版式：页眉、勾选框、数据用真表。表里没有的词先问，不猜。不管选型，不出价格。
 
 输入：
 
@@ -27,7 +28,7 @@ version: 1.3.1
 
 > The combined on-load tap-changer consists of a diverter switch, a tap selector and a change-over selector. After lifting the diverter switch insert out of the oil compartment, inspect the transition resistors and the terminal screen caps.
 
-覆盖华明 OLTC / OCTC 及配套电动机构、保护继电器。不管选型、报价、低压断路器柜，也不用别家样本的词去改华明对外英文。
+配套电动机构、保护继电器也译。华明对外英文跟锁死项走，不用别家样本的英文去改。
 
 ---
 
