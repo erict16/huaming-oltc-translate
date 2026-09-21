@@ -12,6 +12,51 @@ ROOT = Path(__file__).resolve().parents[1]
 GLOSSARY = ROOT / "references" / "glossary.md"
 LANGS = ("cn", "en", "ru", "es")
 CJK_RE = re.compile(r"[\u3400-\u9fff\u3040-\u30ff\uac00-\ud7af]")
+CYRILLIC_RE = re.compile(r"[\u0400-\u04FF]")
+# Longest-first Russian adjective / noun endings. Stdlib only; no pymorphy.
+RU_ENDINGS = (
+    "ыми",
+    "ими",
+    "ого",
+    "его",
+    "ому",
+    "ему",
+    "ами",
+    "ями",
+    "ью",
+    "ых",
+    "их",
+    "ые",
+    "ие",
+    "ая",
+    "яя",
+    "ую",
+    "юю",
+    "ое",
+    "ее",
+    "ый",
+    "ий",
+    "ой",
+    "ей",
+    "ом",
+    "ем",
+    "ов",
+    "ев",
+    "ам",
+    "ям",
+    "ах",
+    "ях",
+    "а",
+    "я",
+    "у",
+    "ю",
+    "е",
+    "и",
+    "о",
+    "й",
+    "ь",
+)
+RU_ENDING_RE = "(?:" + "|".join(RU_ENDINGS) + ")?"
 
 # Refuse to follow paths outside the skill pack for the table itself.
 if not GLOSSARY.is_file():
@@ -90,7 +135,33 @@ def _is_cjk(s: str) -> bool:
     return bool(CJK_RE.search(s))
 
 
-def _find_all(text: str, surface: str) -> list[int]:
+def _is_cyrillic(s: str) -> bool:
+    return bool(CYRILLIC_RE.search(s))
+
+
+def _fold_yo(s: str) -> str:
+    return s.replace("ё", "е").replace("Ё", "Е")
+
+
+def _ru_stem(word: str) -> str:
+    w = _fold_yo(word).casefold()
+    if w.endswith("ь") and len(w) > 4:
+        return w[:-1]
+    for end in RU_ENDINGS:
+        if end and w.endswith(end) and len(w) - len(end) >= 3:
+            return w[: -len(end)]
+    return w
+
+
+def _ru_pattern(surface: str) -> str:
+    words = [w for w in _fold_yo(surface).split() if w]
+    parts = [re.escape(_ru_stem(w)) + RU_ENDING_RE for w in words]
+    body = r"\s+".join(parts)
+    return r"(?<![\w-])" + body + r"(?![\w-])"
+
+
+def _find_all(text: str, surface: str) -> list[tuple[int, int]]:
+    """Return (start, end) spans in the original text."""
     if not surface:
         return []
     if _is_cjk(surface):
@@ -100,12 +171,16 @@ def _find_all(text: str, surface: str) -> list[int]:
             i = text.find(surface, start)
             if i < 0:
                 break
-            hits.append(i)
+            hits.append((i, i + len(surface)))
             start = i + len(surface)
         return hits
-    # Latin / Cyrillic: case-insensitive, do not match inside a hyphenated token.
+    if _is_cyrillic(surface):
+        hay = _fold_yo(text)
+        pat = _ru_pattern(surface)
+        return [(m.start(), m.end()) for m in re.finditer(pat, hay, flags=re.IGNORECASE)]
+    # Latin: case-insensitive, do not match inside a hyphenated token.
     pat = r"(?<![\w-])" + re.escape(surface) + r"(?![\w-])"
-    return [m.start() for m in re.finditer(pat, text, flags=re.IGNORECASE)]
+    return [(m.start(), m.end()) for m in re.finditer(pat, text, flags=re.IGNORECASE)]
 
 
 def scan(text: str, terms: list[dict]) -> dict:
@@ -119,9 +194,8 @@ def scan(text: str, terms: list[dict]) -> dict:
     occupied = [False] * len(text)
     hits = []
     for surface, owners in ordered:
-        for i in _find_all(text, surface):
-            end = i + len(surface)
-            if end > len(text):
+        for i, end in _find_all(text, surface):
+            if end > len(text) or i >= end:
                 continue
             if any(occupied[i:end]):
                 continue

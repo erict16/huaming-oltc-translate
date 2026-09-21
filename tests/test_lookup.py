@@ -161,6 +161,18 @@ class GlossaryTests(unittest.TestCase):
             self.assertEqual(hit["en"], en, cn)
             self.assertTrue(hit["lock"], cn)
 
+    def test_ru_inflected_operating_instruction(self) -> None:
+        ru = (ROOT / "tests" / "fixtures" / "cm_parts.ru.txt").read_text(encoding="utf-8")
+        r = run_lookup(ru)
+        cns = {h["cn"] for h in r["hits"]}
+        self.assertIn("切换开关芯子", cns)
+        self.assertIn("油室", cns)
+        self.assertIn("变压器油箱", cns)
+        by_cn = {h["cn"]: h["matched"].casefold() for h in r["hits"]}
+        self.assertIn("масляного бака контактора", by_cn["油室"])
+        self.assertIn("баке трансформатора", by_cn["变压器油箱"])
+        self.assertIn("выемная часть контактора", by_cn["切换开关芯子"])
+
     def test_reverse_lookup_en_ru_es(self) -> None:
         core = [
             "切换开关芯子",
