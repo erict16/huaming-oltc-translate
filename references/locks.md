@@ -53,3 +53,5 @@ Read this file before translating. If a lock and the model disagree, the lock wi
 Pipe codes on drawings stay as letters: **R / S / Q / E1 / E2 / W**. Do not invent English names for the letters.
 
 Company names, type strings (`CM2III-500Y/72.5-10193W`), drawing numbers, and currents stay as written.
+
+俄文、西语以 `glossary.md` 的 ru / es 列为准。格子空着就问用户，不要编。华明对外英文仍以本表为准，不要用别家样本英文覆盖（例如不要把气体继电器改成 protective relay）。

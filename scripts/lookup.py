@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Local glossary lookup. Stdlib only. No network. Reads bundled TSV only."""
+"""Local glossary lookup. Stdlib only. No network. Reads bundled markdown only."""
 from __future__ import annotations
 
 import argparse
@@ -10,11 +10,17 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 GLOSSARY = ROOT / "references" / "glossary.md"
+LANGS = ("cn", "en", "ru", "es")
+CJK_RE = re.compile(r"[\u3400-\u9fff\u3040-\u30ff\uac00-\ud7af]")
 
 # Refuse to follow paths outside the skill pack for the table itself.
 if not GLOSSARY.is_file():
     sys.stderr.write("glossary.md missing next to this skill; reinstall the pack\n")
     sys.exit(2)
+
+
+def _split_alts(s: str) -> list[str]:
+    return [p.strip() for p in re.split(r"[;/]", s) if p.strip()]
 
 
 def load_terms() -> list[dict]:
@@ -39,43 +45,107 @@ def load_terms() -> list[dict]:
             {
                 "cn": cn,
                 "en": en,
+                "ru": (rec.get("ru") or "").strip(),
+                "es": (rec.get("es") or "").strip(),
                 "alt": (rec.get("alt") or "").strip(),
                 "lock": (rec.get("lock") or "0").strip() == "1",
                 "note": (rec.get("note") or "").strip(),
                 "source": (rec.get("source") or "").strip(),
             }
         )
-    rows.sort(key=lambda r: len(r["cn"]), reverse=True)
     return rows
 
 
-def scan(text: str, terms: list[dict]) -> dict:
-    hits = []
-    occupied = [False] * len(text)
-    remaining = text
-    for term in terms:
-        cn = term["cn"]
+def _surfaces(term: dict) -> list[tuple[str, str]]:
+    """(surface, lang) pairs used for matching. Longest match is applied later."""
+    out: list[tuple[str, str]] = []
+    for lang in LANGS:
+        val = (term.get(lang) or "").strip()
+        if not val:
+            continue
+        out.append((val, lang))
+        if lang == "en":
+            core = re.sub(r"\s*\([^)]*\)", "", val).strip()
+            if core and core != val:
+                out.append((core, lang))
+    for piece in _split_alts(term.get("alt") or ""):
+        # Alt column is English (workbook / lock variants).
+        out.append((piece, "en"))
+        core = re.sub(r"\s*\([^)]*\)", "", piece).strip()
+        if core and core != piece:
+            out.append((core, "en"))
+    # de-dupe keeping first lang tag
+    seen = set()
+    uniq = []
+    for surface, lang in out:
+        key = surface.casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        uniq.append((surface, lang))
+    return uniq
+
+
+def _is_cjk(s: str) -> bool:
+    return bool(CJK_RE.search(s))
+
+
+def _find_all(text: str, surface: str) -> list[int]:
+    if not surface:
+        return []
+    if _is_cjk(surface):
+        hits = []
         start = 0
         while True:
-            i = remaining.find(cn, start)
+            i = text.find(surface, start)
             if i < 0:
                 break
-            if any(occupied[i : i + len(cn)]):
-                start = i + 1
+            hits.append(i)
+            start = i + len(surface)
+        return hits
+    # Latin / Cyrillic: case-insensitive, do not match inside a hyphenated token.
+    pat = r"(?<![\w-])" + re.escape(surface) + r"(?![\w-])"
+    return [m.start() for m in re.finditer(pat, text, flags=re.IGNORECASE)]
+
+
+def scan(text: str, terms: list[dict]) -> dict:
+    # Same surface (e.g. Buchholz relay) can name more than one Chinese row.
+    by_surface: dict[str, list[tuple[str, dict]]] = {}
+    for term in terms:
+        for surface, lang in _surfaces(term):
+            by_surface.setdefault(surface, []).append((lang, term))
+    ordered = sorted(by_surface.items(), key=lambda kv: len(kv[0]), reverse=True)
+
+    occupied = [False] * len(text)
+    hits = []
+    for surface, owners in ordered:
+        for i in _find_all(text, surface):
+            end = i + len(surface)
+            if end > len(text):
                 continue
-            for j in range(i, i + len(cn)):
+            if any(occupied[i:end]):
+                continue
+            for j in range(i, end):
                 occupied[j] = True
-            hits.append(
-                {
-                    "cn": cn,
-                    "en": term["en"],
-                    "alt": term["alt"],
-                    "lock": term["lock"],
-                    "index": i,
-                }
-            )
-            start = i + len(cn)
-    hits.sort(key=lambda h: h["index"])
+            seen_cn = set()
+            for lang, term in owners:
+                if term["cn"] in seen_cn:
+                    continue
+                seen_cn.add(term["cn"])
+                hits.append(
+                    {
+                        "cn": term["cn"],
+                        "en": term["en"],
+                        "ru": term["ru"],
+                        "es": term["es"],
+                        "alt": term["alt"],
+                        "lock": term["lock"],
+                        "index": i,
+                        "matched": text[i:end],
+                        "matched_lang": lang,
+                    }
+                )
+    hits.sort(key=lambda h: (h["index"], -len(h["cn"])))
     return {
         "hits": hits,
         "hit_count": len(hits),
@@ -97,10 +167,9 @@ def check_english(en_text: str, hits: list[dict]) -> list[dict]:
         seen.add(key)
         needles = [h["en"]]
         if h["alt"]:
-            needles.extend(p.strip() for p in re.split(r"[;/]", h["alt"]) if p.strip())
+            needles.extend(_split_alts(h["alt"]))
         ok = False
         for n in needles:
-            # Allow dropping parenthetical abbreviations: motor drive unit (MDU) vs MDU
             core = re.sub(r"\s*\([^)]*\)", "", n).strip()
             if n.lower() in low or (core and core.lower() in low):
                 ok = True
@@ -137,9 +206,17 @@ def banned_english(en_text: str) -> list[str]:
     return found
 
 
+def _row_line(h: dict) -> str:
+    flag = "LOCK" if h["lock"] else "term"
+    ru = h.get("ru") or ""
+    es = h.get("es") or ""
+    extra = f"\t{ru}\t{es}" if (ru or es) else ""
+    return f"{flag}\t{h['cn']}\t{h['en']}{extra}"
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description="Huaming OLTC glossary lookup")
-    p.add_argument("--text", help="Source text (CN or mixed). Use - for stdin.")
+    p.add_argument("--text", help="Source text (CN/EN/RU/ES or mixed). Use - for stdin.")
     p.add_argument("--en", help="Optional English translation to check against locks.")
     p.add_argument("--json", action="store_true")
     args = p.parse_args()
@@ -162,8 +239,7 @@ def main() -> None:
         print("no glossary hits")
         return
     for h in result["hits"]:
-        flag = "LOCK" if h["lock"] else "term"
-        print(f"{flag}\t{h['cn']}\t{h['en']}")
+        print(_row_line(h))
     if args.en:
         for m in result.get("missing_locks") or []:
             print(f"MISSING\t{m['cn']}\t{m['expected']}")

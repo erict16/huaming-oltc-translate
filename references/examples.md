@@ -1,6 +1,6 @@
 # Worked examples
 
-These are the bar. Match this density. Terms come from `locks.md` / `glossary.tsv`.
+These are the bar. Match this density. Terms come from `locks.md` / `glossary.md`.
 
 ## 1. Foreword (CM operating instructions)
 

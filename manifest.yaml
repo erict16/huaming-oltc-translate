@@ -1,10 +1,10 @@
 name: huaming-oltc-translate
-version: 1.2.2
-description: 把华明有载/无载分接开关说明书、技术函、外形图注和订货规范译成与公司对照表一致的英文。词从表里来，句子按工程师说明书写。
-display_name: 华明分接开关资料翻译
-display_name_en: Huaming Tap-Changer Document Translation
-description_zh: 按华明术语对照表翻译分接开关说明书和技术函，锁死易错词，英文按工程师说明书写。
-description_en: Translate Huaming OLTC/OCTC manuals and technical notes with the company glossary. Locked false friends. Engineer-instruction English.
+version: 1.3.0
+description: 把华明分接开关说明书、技术函、图注、订货规范在中文、英文、俄文、西语之间互译。词从表里来，句子按工程师说明书写。
+display_name: 华明翻译助手
+display_name_en: Huaming Translation Helper
+description_zh: 华明分接开关资料在中英俄西之间互译。词跟对照表走，表里没有的先问。
+description_en: Translate Huaming tap-changer manuals, notes, drawing labels and order-spec fields among Chinese, English, Russian and Spanish. Terms from the table. Ask when a cell is empty.
 author: Eric Tan
 license: MIT
 category: engineering

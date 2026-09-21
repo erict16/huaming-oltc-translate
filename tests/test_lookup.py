@@ -44,8 +44,26 @@ class GlossaryTests(unittest.TestCase):
         man = MANIFEST.read_text(encoding="utf-8")
         sv = [ln.split(":", 1)[1].strip() for ln in skill.splitlines() if ln.startswith("version:")]
         mv = [ln.split(":", 1)[1].strip() for ln in man.splitlines() if ln.startswith("version:")]
-        self.assertEqual(sv, ["1.2.2"])
-        self.assertEqual(mv, ["1.2.2"])
+        self.assertEqual(len(sv), 1)
+        self.assertEqual(sv, mv)
+        parts = [int(x) for x in sv[0].split(".")]
+        self.assertGreater(tuple(parts), (1, 2, 2))
+
+    def test_display_name(self) -> None:
+        skill = SKILL.read_text(encoding="utf-8")
+        man = MANIFEST.read_text(encoding="utf-8")
+        self.assertIn("displayName: 华明翻译助手", skill)
+        self.assertIn("display_name: 华明翻译助手", man)
+        self.assertNotIn("华明分接开关资料翻译", skill.split("---", 2)[1])
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertIn("华明翻译助手", readme)
+        self.assertIn("俄文", readme)
+        self.assertIn("西语", readme)
+        for blob in (skill, man, readme):
+            self.assertNotIn("赋能", blob)
+            self.assertNotIn("闭环", blob)
+            self.assertNotIn("一站式", blob)
+            self.assertNotIn("选型助手", blob)
 
     def test_diverter_insert(self) -> None:
         r = run_lookup("切换开关芯子从油室吊出")
@@ -118,6 +136,79 @@ class GlossaryTests(unittest.TestCase):
     def test_company_name(self) -> None:
         r = run_lookup("上海华明电力设备制造有限公司")
         self.assertEqual(r["hits"][0]["en"], "Shanghai Huaming Power Equipment Co., Ltd.")
+
+    def _cn_row(self, cn: str) -> dict:
+        r = run_lookup(cn)
+        hits = [h for h in r["hits"] if h["cn"] == cn]
+        self.assertTrue(hits, f"missing glossary row for {cn}")
+        return hits[0]
+
+    def test_locked_set_still_holds(self) -> None:
+        expected = {
+            "均压罩": "terminal screen caps",
+            "屏蔽帽": "screen cap",
+            "气体继电器": "Buchholz relay",
+            "保护继电器": "protective relay",
+            "切换开关芯子": "diverter switch insert",
+            "组合式": "combined",
+            "复合式": "compound",
+            "冷压管": "crimp sleeve",
+            "油室": "oil compartment",
+            "变压器油箱": "transformer tank",
+        }
+        for cn, en in expected.items():
+            hit = self._cn_row(cn)
+            self.assertEqual(hit["en"], en, cn)
+            self.assertTrue(hit["lock"], cn)
+
+    def test_reverse_lookup_en_ru_es(self) -> None:
+        core = [
+            "切换开关芯子",
+            "油室",
+            "气体继电器",
+            "保护继电器",
+            "变压器油箱",
+            "有载分接开关",
+            "分接选择器",
+            "转换选择器",
+            "垂直传动轴",
+        ]
+        for cn in core:
+            row = self._cn_row(cn)
+            for lang in ("en", "ru", "es"):
+                surface = (row.get(lang) or "").strip()
+                self.assertTrue(surface, f"{cn} missing {lang}")
+                r = run_lookup(surface)
+                cns = {h["cn"] for h in r["hits"]}
+                self.assertIn(cn, cns, f"{lang} {surface!r} did not hit {cn}")
+
+    def test_huaming_only_ru_es_stay_empty(self) -> None:
+        for cn in ("均压罩", "冷压管", "组合式", "复合式"):
+            row = self._cn_row(cn)
+            self.assertFalse((row.get("ru") or "").strip(), cn)
+            self.assertFalse((row.get("es") or "").strip(), cn)
+
+    def test_cm_parts_fixture(self) -> None:
+        cn = (ROOT / "tests" / "fixtures" / "cm_parts.cn.txt").read_text(encoding="utf-8")
+        en = (ROOT / "tests" / "fixtures" / "cm_parts.en.txt").read_text(encoding="utf-8")
+        r = run_lookup(cn, en)
+        ens = {h["cn"]: h["en"] for h in r["hits"]}
+        self.assertEqual(ens.get("切换开关芯子"), "diverter switch insert")
+        self.assertEqual(ens.get("油室"), "oil compartment")
+        self.assertEqual(ens.get("过渡电阻"), "transition resistor")
+        self.assertEqual(r["missing_locks"], [])
+        self.assertEqual(r["banned"], [])
+
+    def test_lookup_cli_twice(self) -> None:
+        text = "切换开关芯子从油室吊出后，检查过渡电阻和均压罩。"
+        first = run_lookup(text)
+        second = run_lookup(text)
+        self.assertEqual(first["hits"], second["hits"])
+        ens = {h["cn"]: h["en"] for h in first["hits"]}
+        self.assertEqual(ens.get("切换开关芯子"), "diverter switch insert")
+        self.assertEqual(ens.get("油室"), "oil compartment")
+        self.assertEqual(ens.get("均压罩"), "terminal screen caps")
+        self.assertEqual(ens.get("过渡电阻"), "transition resistor")
 
 
 class SafetyScanTests(unittest.TestCase):

@@ -79,7 +79,49 @@ LOCKS: list[tuple[str, str, str, str]] = [
     ("传动轴", "driving shaft", "", "Workbook title-case Driving shaft."),
     ("变压器油箱", "transformer tank", "", "Do not match 变压器油 inside this span."),
     ("油箱", "tank", "transformer tank", "Prefer transformer tank when the source is 变压器油箱."),
+    ("油室", "oil compartment", "", "Not the transformer tank."),
+    ("切换开关", "diverter switch", "", "Not change-over switch."),
+    ("分接选择器", "tap selector", "", "Not the whole tap-changer."),
+    ("转换选择器", "change-over selector", "", "Not the diverter switch."),
+    ("选择开关", "selector switch", "", "Compound OLTC (CV/CV2/SV). Not tap selector."),
+    ("有载分接开关", "on-load tap-changer (OLTC)", "tap-changer", "Hyphen: tap-changer. Not switch."),
+    ("压力释放阀", "pressure relief valve", "pressure relief device", "Huaming OI writes valve. MR writes pressure relief device."),
 ]
+
+# RU/ES harvested from Huaming ESP/RU OIs and MR public OI/TD.
+# Empty string = do not guess; the skill must ask.
+# Huaming EN locks still win; these columns are for the other two languages.
+I18N: dict[str, tuple[str, str]] = {
+    # cn: (ru, es)
+    "有载分接开关": ("устройство РПН", "cambiador de tomas bajo carga"),
+    "无载分接开关": ("устройство ПБВ", "cambiador de tomas sin tensión"),
+    "无励磁分接开关": ("устройство ПБВ", "cambiador de tomas sin tensión"),
+    "切换开关": ("контактор", "ruptor"),
+    "切换开关芯子": ("выемная часть контактора", "cuerpo insertable del ruptor"),
+    "分接选择器": ("избиратель", "selector"),
+    "转换选择器": ("предызбиратель", "preselector"),
+    "选择开关": ("", ""),
+    "油室": ("масляный бак контактора", "recipiente de aceite"),
+    "变压器油箱": ("бак трансформатора", "cuba del transformador"),
+    "电动机构": ("моторный привод", "accionamiento a motor"),
+    "分接开关驱动装置": ("моторный привод", "accionamiento a motor"),
+    "垂直传动轴": ("вертикальный приводной вал", "árbol de accionamiento vertical"),
+    "水平传动轴": ("горизонтальный приводной вал", "árbol de accionamiento horizontal"),
+    "传动轴": ("приводной вал", "árbol de accionamiento"),
+    "保护继电器": ("защитное реле", "relé de protección"),
+    "有载开关保护": ("защитное реле РПН", "relé de protección del cambiador de tomas"),
+    "有载分接开关保护继电器": ("защитное реле РПН", "relé de protección del cambiador de tomas"),
+    "气体继电器": ("реле Бухгольца", "relé Buchholz"),
+    "布赫霍尔茨继电器": ("реле Бухгольца", "relé Buchholz"),
+    "过渡电阻": ("переходный резистор", "resistencia de transición"),
+    "真空灭弧室": ("вакуумная камера", "cámara de vacío"),
+    "压力释放阀": ("клапан сброса давления", "válvula de alivio de presión"),
+    "有载开关顶盖": ("крышка головки устройства РПН", "tapa de la cabeza del cambiador de tomas"),
+    "头盖": ("крышка головки", "tapa de la cabeza"),
+    "顶盖": ("крышка", "tapa"),
+    "分接开关头部": ("головка устройства РПН", "cabeza del cambiador de tomas"),
+    "伞齿轮盒": ("угловой редуктор", "reenvío angular"),
+}
 
 
 def norm_cn(s: str) -> str:
@@ -151,11 +193,14 @@ def merge(workbooks: list[Path]) -> list[dict]:
         key = norm_cn(cn)
         if not key or not en:
             return
+        ru, es = I18N.get(key, ("", ""))
         cur = by_cn.get(key)
         if cur is None:
             by_cn[key] = {
                 "cn": cn,
                 "en": en,
+                "ru": ru,
+                "es": es,
                 "alt": alt,
                 "pos": pos,
                 "note": note,
@@ -163,6 +208,10 @@ def merge(workbooks: list[Path]) -> list[dict]:
                 "lock": "1" if locked else "0",
             }
             return
+        if ru and not cur.get("ru"):
+            cur["ru"] = ru
+        if es and not cur.get("es"):
+            cur["es"] = es
         if locked:
             # Locks replace workbook English. Do not keep workbook alts
             # (they include false friends such as corona cap / protective relay).
@@ -194,6 +243,16 @@ def merge(workbooks: list[Path]) -> list[dict]:
     for cn, en, alt, note in LOCKS:
         put(cn, en, alt, "", note, "os-lock", True)
 
+    for cn, (ru, es) in I18N.items():
+        key = norm_cn(cn)
+        cur = by_cn.get(key)
+        if cur is None:
+            continue
+        if ru:
+            cur["ru"] = ru
+        if es:
+            cur["es"] = es
+
     rows = list(by_cn.values())
     rows.sort(key=lambda r: (-len(norm_cn(r["cn"])), r["cn"]))
     return rows
@@ -209,16 +268,20 @@ def main() -> None:
         "# Huaming OLTC glossary",
         "",
         "Source: Huaming switch terminology workbook (2026-01-30) plus OS locks.",
-        "Lock=1 wins over the model. Do not invent terms.",
+        "RU/ES: Huaming ESP/RU operating instructions and Maschinenfabrik Reinhausen public OI/TD.",
+        "Lock=1 wins over the model. Empty ru/es means ask, do not guess.",
+        "Huaming English locks win over MR English.",
         "",
-        "| cn | en | alt | lock | note |",
-        "|----|----|-----|------|------|",
+        "| cn | en | ru | es | alt | lock | note |",
+        "|----|----|----|----|-----|------|------|",
     ]
     for r in rows:
         lines.append(
-            "| {cn} | {en} | {alt} | {lock} | {note} |".format(
+            "| {cn} | {en} | {ru} | {es} | {alt} | {lock} | {note} |".format(
                 cn=esc(r["cn"]),
                 en=esc(r["en"]),
+                ru=esc(r.get("ru") or ""),
+                es=esc(r.get("es") or ""),
                 alt=esc(r["alt"]),
                 lock=esc(r["lock"]),
                 note=esc(r["note"]),
@@ -226,7 +289,8 @@ def main() -> None:
         )
     OUT.write_text("\n".join(lines) + "\n", encoding="utf-8")
     locked = sum(1 for r in rows if r["lock"] == "1")
-    print(f"wrote {len(rows)} terms ({locked} locks) -> {OUT.relative_to(ROOT)}")
+    filled = sum(1 for r in rows if r.get("ru") or r.get("es"))
+    print(f"wrote {len(rows)} terms ({locked} locks, {filled} with ru/es) -> {OUT.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

@@ -1,8 +1,8 @@
-# 华明分接开关资料翻译
+# 华明翻译助手
 
-把华明有载 / 无载分接开关的说明书、技术函、外形图注和订货规范译成英文。用词跟公司术语对照表走，句子按工程师说明书写。
+把华明有载 / 无载分接开关的说明书、技术函、外形图注和订货规范，在中文、英文、俄文、西语之间互译。用词跟公司对照表走，句子按工程师说明书写。
 
-不管选型，不出价格。
+表里没有的词先问，不要猜。不管选型，不出价格。
 
 ## 安装
 
@@ -12,10 +12,12 @@
 git clone https://github.com/erict16/huaming-oltc-translate.git ~/.grok/skills/huaming-oltc-translate
 ```
 
-对助手说「把这段说明书译成英文」即可。有 Python 3.10+ 时可以本地查词：
+对助手说「把这段说明书译成英文 / 俄文 / 西语」即可。有 Python 3.10+ 时可以本地查词：
 
 ```
 python scripts/lookup.py --text "检查油室里的切换开关芯子"
+python scripts/lookup.py --text "diverter switch insert"
+python scripts/lookup.py --text "выемная часть контактора"
 python tests/test_lookup.py
 ```
 
@@ -23,10 +25,12 @@ python tests/test_lookup.py
 
 ## 词表
 
-- 主源：华明《开关专业术语中英对照表》（2026-01-30）
-- 锁死项：`references/locks.md`（OS 字段和假朋友，压过表里的两可译法）
-- 全文：`references/glossary.md`
-- Word 交稿：`references/word-layout.md`（页眉两格、☐ 选框、真表、导出 PDF 自检）
+- 中英主源：华明《开关专业术语中英对照表》（2026-01-30）和华明说明书
+- 俄文、西语：华明俄文 / 西语说明书，以及 Reinhausen 公开说明书里的通用词
+- 华明对外英文以锁死项为准，不用别家英文去改华明 OS
+- 锁死项：`references/locks.md`
+- 全文：`references/glossary.md`（ru / es 空着的表示还没有出处）
+- Word 交稿：`references/word-layout.md`
 
 ## 发布形态
 
