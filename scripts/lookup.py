@@ -300,6 +300,14 @@ def main() -> None:
         raw = sys.stdin.read()
     else:
         raw = args.text
+    if not (raw or "").strip():
+        result = {"hits": [], "hit_count": 0, "unique_cn": [], "error": "empty input"}
+        if args.json:
+            json.dump(result, sys.stdout, ensure_ascii=False, indent=2)
+            sys.stdout.write("\n")
+            return
+        print("empty input")
+        return
     terms = load_terms()
     result = scan(raw, terms)
     if args.en:

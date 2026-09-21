@@ -1,5 +1,5 @@
 name: huaming-oltc-translate
-version: 1.3.2
+version: 1.3.3
 description: 华明分接开关说明书、技术函、图注、订货规范，中英俄西互译。词从表里来，句子按工程师说明书写，交 Word 按说明书版式（页眉、勾选、真表）。表里没有的先问。
 display_name: 华明翻译助手
 display_name_en: Huaming Translation Assistant
@@ -8,5 +8,3 @@ description_en: Huaming tap-changer manuals, notes, drawing labels and order she
 author: Eric Tan
 license: MIT
 category: engineering
-requires:
-  python: ">=3.10"

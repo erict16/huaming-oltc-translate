@@ -21,7 +21,7 @@ python scripts/lookup.py --text "выемная часть контактора"
 python tests/test_lookup.py
 ```
 
-查词只读本包 `references/glossary.md`，不联网。
+查词只读本包 `references/glossary.md`，不联网。Python 不是必须的。常见问题见 `references/faq.md`。
 
 ## 词表
 
