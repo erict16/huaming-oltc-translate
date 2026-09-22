@@ -84,6 +84,8 @@ LOCKS: list[tuple[str, str, str, str]] = [
     ("分接选择器", "tap selector", "", "Not the whole tap-changer."),
     ("转换选择器", "change-over selector", "", "Not the diverter switch."),
     ("选择开关", "selector switch", "", "Compound OLTC (CV/CV2/SV). Not tap selector."),
+    ("选择开关位置", "selector switch position", "", "Not change-over selector position."),
+    ("上海华明电力设备制造有限公司", "Shanghai Huaming Power Equipment Co., Ltd.", "", ""),
     ("有载分接开关", "on-load tap-changer (OLTC)", "tap-changer", "Hyphen: tap-changer. Not switch."),
     ("压力释放阀", "pressure relief valve", "pressure relief device", "Huaming OI writes valve. MR writes pressure relief device."),
 ]

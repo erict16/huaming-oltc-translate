@@ -22,6 +22,7 @@ Read this file before translating. If a lock and the model disagree, the lock wi
 | 分接选择器 | tap selector | tap changer (the whole unit) |
 | 转换选择器 | change-over selector | diverter switch |
 | 选择开关 | selector switch | tap selector (combined) |
+| 选择开关位置 | selector switch position | change-over selector position |
 | 组合式 | combined | compound |
 | 复合式 | compound | combined |
 | 笼式 / 笼型 | cage type | drum |
@@ -54,4 +55,4 @@ Pipe codes on drawings stay as letters: **R / S / Q / E1 / E2 / W**. Do not inve
 
 Company names, type strings (`CM2III-500Y/72.5-10193W`), drawing numbers, and currents stay as written.
 
-俄文、西语以 `glossary.md` 的 ru / es 列为准。格子空着就问用户，不要编。华明对外英文仍以本表为准，不要用别家样本英文覆盖（例如不要把气体继电器改成 protective relay）。
+俄文、西语以 `glossary.md` 的 ru / es 列为准。格子空着就问用户，不要编。一个俄文或西语单词如果已经是另一条更长术语的开头，就不要用这个单词去扫整句。顶盖的 крышка、tapa 就是这样：头盖、有载开关顶盖用整条。华明对外英文仍以本表为准，不要用别家样本英文覆盖（例如不要把气体继电器改成 protective relay）。

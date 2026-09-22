@@ -9,7 +9,7 @@ Huaming English locks win over MR English.
 |----|----|----|----|-----|------|------|
 | 圆齿轮盒/扁齿轮盒/减速齿轮盒/传动齿轮盒 | Top gearbox |  |  |  | 0 | 参考实际图形翻译，可能为“圆齿轮盒”或“扁齿轮盒”，针对SHZV为“圆齿轮盒 |
 | 限流自耦变压器(电抗开关匹配的电抗器） | preventive autotransformer |  |  |  | 0 |  |
-| 上海华明电力设备制造有限公司 | Shanghai Huaming Power Equipment Co., Ltd. |  |  |  | 0 |  |
+| 上海华明电力设备制造有限公司 | Shanghai Huaming Power Equipment Co., Ltd. |  |  |  | 1 |  |
 | 带手摇把联锁开关的手摇把开孔 | Hand-crank access port with interlock switch |  |  |  | 0 |  |
 | W - 扁齿轮盒/减速齿轮盒 | W: Top gearbox |  |  |  | 0 |  |
 | 分接选择器底部与A等电位 | Tap selector bottom and are equal potential |  |  |  | 0 |  |
@@ -108,7 +108,7 @@ Huaming English locks win over MR English.
 | 综合试验电路 | Synthetic test circuit |  |  |  | 0 |  |
 | 触头温升测试 | temperature rise of contacts |  |  |  | 0 |  |
 | 过渡阻抗测试 | transition impedance test |  |  |  | 0 |  |
-| 选择开关位置 | change-over selector position |  |  | Selector switch position | 0 |  |
+| 选择开关位置 | selector switch position |  |  |  | 1 | Not the change-over selector. |
 | 选择开关端子 | Selector switch terminal |  |  |  | 0 |  |
 | 钟罩式变压器 | bell-type transformer |  |  |  | 0 |  |
 | 预计开断电流 | prospective current |  |  |  | 0 |  |

@@ -2,7 +2,7 @@
 
 Huaming Translation Assistant
 
-把华明有载、无载分接开关的说明书、技术函、图注和订货规范，在中文、英文、俄文、西语之间互译。用词跟对照表走，句子写成工程师说明书那样，不写宣传腔。交 Word 就按华明说明书的版式：页眉、勾选框、数据用真表。表里没有的词先问，不猜。不管选型，不出价格。
+把华明有载、无载分接开关的说明书、技术函、图注和订货规范译成英文。俄文、西语只译对照表里写了的，空格先问，不猜。用词跟对照表走，句子写成工程师说明书那样，不写宣传腔。交英文 Word 就按华明说明书的版式：页眉、勾选框、数据用真表。不管选型，不出价格。
 
 ## 安装
 
@@ -12,13 +12,13 @@ Huaming Translation Assistant
 git clone https://github.com/erict16/huaming-oltc-translate.git ~/.grok/skills/huaming-oltc-translate
 ```
 
-对助手说「把这段说明书译成英文 / 俄文 / 西语」即可。有 Python 3.10+ 时可以本地查词：
+对助手说「把这段说明书译成英文」即可。俄文、西语只译表里有的。有 Python 3.10+ 时可以本地查词：
 
 ```
 python scripts/lookup.py --text "检查油室里的切换开关芯子"
-python scripts/lookup.py --text "diverter switch insert"
+python scripts/lookup.py --json --text "检查均压罩" --en "Inspect the terminal screen caps."
 python scripts/lookup.py --text "выемная часть контактора"
-python tests/test_lookup.py
+python -m unittest tests.test_lookup
 ```
 
 查词只读本包 `references/glossary.md`，不联网。Python 不是必须的。常见问题见 `references/faq.md`。

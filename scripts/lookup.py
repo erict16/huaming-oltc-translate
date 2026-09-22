@@ -139,6 +139,32 @@ def _is_cyrillic(s: str) -> bool:
     return bool(CYRILLIC_RE.search(s))
 
 
+def _word_key(word: str) -> str:
+    return _fold_yo(word).strip(".,;:()").casefold()
+
+
+def _opening_words(terms: list[dict]) -> set[tuple[str, str]]:
+    """First word of a multi-word ru/es gloss. A one-word gloss with that
+    same opening is not a needle (locks.md). The row still keeps the gloss.
+    """
+    found: set[tuple[str, str]] = set()
+    for term in terms:
+        for lang in ("ru", "es"):
+            parts = [_word_key(p) for p in (term.get(lang) or "").split() if p.strip()]
+            if len(parts) >= 2 and parts[0]:
+                found.add((lang, parts[0]))
+    return found
+
+
+def _blocked_needle(surface: str, lang: str, openings: set[tuple[str, str]]) -> bool:
+    if lang not in ("ru", "es"):
+        return False
+    parts = [_word_key(p) for p in surface.split() if p.strip()]
+    if len(parts) != 1 or not parts[0]:
+        return False
+    return (lang, parts[0]) in openings
+
+
 def _fold_yo(s: str) -> str:
     return s.replace("ё", "е").replace("Ё", "Е")
 
@@ -185,9 +211,12 @@ def _find_all(text: str, surface: str) -> list[tuple[int, int]]:
 
 def scan(text: str, terms: list[dict]) -> dict:
     # Same surface (e.g. Buchholz relay) can name more than one Chinese row.
+    openings = _opening_words(terms)
     by_surface: dict[str, list[tuple[str, dict]]] = {}
     for term in terms:
         for surface, lang in _surfaces(term):
+            if _blocked_needle(surface, lang, openings):
+                continue
             by_surface.setdefault(surface, []).append((lang, term))
     ordered = sorted(by_surface.items(), key=lambda kv: len(kv[0]), reverse=True)
 
@@ -257,6 +286,38 @@ def check_english(en_text: str, hits: list[dict]) -> list[dict]:
     return problems
 
 
+def _gloss_in_draft(gloss: str, draft: str, lang: str) -> bool:
+    if not gloss or not draft:
+        return False
+    if lang == "ru":
+        hay = _fold_yo(draft)
+        return re.search(_ru_pattern(gloss), hay, flags=re.IGNORECASE) is not None
+    pat = r"(?<![\w-])" + re.escape(gloss) + r"(?![\w-])"
+    return re.search(pat, draft, flags=re.IGNORECASE) is not None
+
+
+def check_lang(draft: str | None, hits: list[dict], lang: str) -> dict:
+    """Filled locks must show up in the draft. Empty cells are questions, not failures."""
+    missing = []
+    ask = []
+    seen = set()
+    for h in hits:
+        key = h["cn"]
+        if key in seen:
+            continue
+        seen.add(key)
+        gloss = (h.get(lang) or "").strip()
+        if not gloss:
+            ask.append({"cn": key, "en": h["en"], "to": lang, "lock": h["lock"]})
+            continue
+        if draft is None or not h["lock"]:
+            continue
+        if not _gloss_in_draft(gloss, draft, lang):
+            missing.append({"cn": key, "expected": gloss, "to": lang})
+    ask.sort(key=lambda a: (not a["lock"], -len(a["cn"]), a["cn"]))
+    return {"missing_target": missing, "ask": ask}
+
+
 def banned_english(en_text: str) -> list[str]:
     banned = [
         "corona cap",
@@ -288,45 +349,61 @@ def _row_line(h: dict) -> str:
     return f"{flag}\t{h['cn']}\t{h['en']}{extra}"
 
 
+def _emit(result: dict, as_json: bool) -> int:
+    failed = bool(
+        result.get("missing_locks") or result.get("banned") or result.get("missing_target")
+    )
+    if as_json:
+        json.dump(result, sys.stdout, ensure_ascii=False, indent=2)
+        sys.stdout.write("\n")
+        return 1 if failed else 0
+    if result.get("error") == "empty input":
+        print("empty input")
+        return 0
+    if not result.get("hits"):
+        print("no glossary hits")
+    else:
+        for h in result["hits"]:
+            print(_row_line(h))
+    for m in result.get("missing_locks") or []:
+        print(f"MISSING\t{m['cn']}\t{m['expected']}")
+    for m in result.get("missing_target") or []:
+        print(f"MISSING\t{m['cn']}\t{m['expected']}")
+    for b in result.get("banned") or []:
+        print(f"BANNED\t{b}")
+    for a in result.get("ask") or []:
+        print(f"ASK\t{a['cn']}\t{a['to']}")
+    return 1 if failed else 0
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description="Huaming OLTC glossary lookup")
     p.add_argument("--text", help="Source text (CN/EN/RU/ES or mixed). Use - for stdin.")
-    p.add_argument("--en", help="Optional English translation to check against locks.")
+    p.add_argument("--en", help="English draft to check against locks.")
+    p.add_argument("--ru", help="Russian draft to check against filled locks.")
+    p.add_argument("--es", help="Spanish draft to check against filled locks.")
     p.add_argument("--json", action="store_true")
     args = p.parse_args()
-    if args.text is None:
-        raw = sys.stdin.read()
-    elif args.text == "-":
+    drafts = [name for name in ("en", "ru", "es") if getattr(args, name)]
+    if len(drafts) > 1:
+        sys.stderr.write("pass only one of --en, --ru, --es\n")
+        sys.exit(2)
+    if args.text is None or args.text == "-":
         raw = sys.stdin.read()
     else:
         raw = args.text
     if not (raw or "").strip():
         result = {"hits": [], "hit_count": 0, "unique_cn": [], "error": "empty input"}
-        if args.json:
-            json.dump(result, sys.stdout, ensure_ascii=False, indent=2)
-            sys.stdout.write("\n")
-            return
-        print("empty input")
-        return
+        sys.exit(_emit(result, args.json))
     terms = load_terms()
     result = scan(raw, terms)
     if args.en:
         result["missing_locks"] = check_english(args.en, result["hits"])
         result["banned"] = banned_english(args.en)
-    if args.json:
-        json.dump(result, sys.stdout, ensure_ascii=False, indent=2)
-        sys.stdout.write("\n")
-        return
-    if not result["hits"]:
-        print("no glossary hits")
-        return
-    for h in result["hits"]:
-        print(_row_line(h))
-    if args.en:
-        for m in result.get("missing_locks") or []:
-            print(f"MISSING\t{m['cn']}\t{m['expected']}")
-        for b in result.get("banned") or []:
-            print(f"BANNED\t{b}")
+    elif args.ru or args.es:
+        lang = "ru" if args.ru else "es"
+        result.update(check_lang(getattr(args, lang), result["hits"], lang))
+    sys.exit(_emit(result, args.json))
 
 
 if __name__ == "__main__":

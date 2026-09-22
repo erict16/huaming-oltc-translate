@@ -15,7 +15,7 @@ cpSync(root, dir, {
     const rel = path.relative(root, src).replaceAll("\\", "/");
     if (!rel) return true;
     const top = rel.split("/")[0];
-    if ([".git", "assets", "scripts", "tests", "node_modules"].includes(top)) {
+    if ([".git", ".github", "assets", "scripts", "tests", "node_modules"].includes(top)) {
       return false;
     }
     const base = path.basename(src);

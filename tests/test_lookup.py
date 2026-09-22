@@ -18,12 +18,29 @@ MANIFEST = ROOT / "manifest.yaml"
 GLOSSARY = ROOT / "references" / "glossary.md"
 
 
-def run_lookup(text: str, en: str | None = None) -> dict:
+def run_lookup(
+    text: str,
+    en: str | None = None,
+    ru: str | None = None,
+    es: str | None = None,
+) -> dict:
     cmd = [sys.executable, str(LOOKUP), "--json", "--text", text]
     if en is not None:
         cmd.extend(["--en", en])
-    out = subprocess.check_output(cmd, cwd=str(ROOT), text=True, encoding="utf-8")
-    return json.loads(out)
+    if ru is not None:
+        cmd.extend(["--ru", ru])
+    if es is not None:
+        cmd.extend(["--es", es])
+    proc = subprocess.run(
+        cmd,
+        cwd=str(ROOT),
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    data = json.loads(proc.stdout)
+    data["exit"] = proc.returncode
+    return data
 
 
 class GlossaryTests(unittest.TestCase):
@@ -47,8 +64,7 @@ class GlossaryTests(unittest.TestCase):
         mv = [ln.split(":", 1)[1].strip() for ln in man.splitlines() if ln.startswith("version:")]
         self.assertEqual(len(sv), 1)
         self.assertEqual(sv, mv)
-        parts = [int(x) for x in sv[0].split(".")]
-        self.assertGreater(tuple(parts), (1, 2, 2))
+        self.assertEqual(sv[0], "1.4.0")
 
     def test_display_name(self) -> None:
         skill = SKILL.read_text(encoding="utf-8")
@@ -113,6 +129,7 @@ class GlossaryTests(unittest.TestCase):
         r = run_lookup(cn, en)
         self.assertEqual(r["missing_locks"], [])
         self.assertEqual(r["banned"], [])
+        self.assertEqual(r["exit"], 0)
 
     def test_false_friends_caught(self) -> None:
         cn = "检查均压罩和冷压管，以及有载开关顶盖。"
@@ -122,6 +139,7 @@ class GlossaryTests(unittest.TestCase):
         self.assertIn("均压罩", missing)
         self.assertIn("冷压管", missing)
         self.assertTrue(r["banned"])
+        self.assertEqual(r["exit"], 1)
 
     def test_tank_not_oil(self) -> None:
         r = run_lookup("气体继电器装在变压器油箱上")
@@ -145,6 +163,7 @@ class GlossaryTests(unittest.TestCase):
     def test_company_name(self) -> None:
         r = run_lookup("上海华明电力设备制造有限公司")
         self.assertEqual(r["hits"][0]["en"], "Shanghai Huaming Power Equipment Co., Ltd.")
+        self.assertTrue(r["hits"][0]["lock"])
 
     def _cn_row(self, cn: str) -> dict:
         r = run_lookup(cn)
@@ -235,6 +254,81 @@ class GlossaryTests(unittest.TestCase):
         r = run_lookup("")
         self.assertEqual(r["hits"], [])
         self.assertEqual(r.get("error"), "empty input")
+        self.assertEqual(r["exit"], 0)
+
+    def test_selector_switch_position(self) -> None:
+        hit = self._cn_row("选择开关位置")
+        self.assertEqual(hit["en"], "selector switch position")
+        self.assertNotIn("change-over", hit["en"].lower())
+        self.assertNotIn("change-over", (hit.get("alt") or "").lower())
+        back = run_lookup("selector switch position")
+        self.assertIn("选择开关位置", {h["cn"] for h in back["hits"]})
+        other = run_lookup("change-over selector position")
+        cns = {h["cn"] for h in other["hits"]}
+        self.assertIn("转换选择器位置", cns)
+        self.assertNotIn("选择开关位置", cns)
+
+    def test_bare_cover_is_not_a_needle(self) -> None:
+        es = run_lookup("Cierre la tapa del recipiente.")
+        self.assertNotIn("顶盖", {h["cn"] for h in es["hits"]})
+        ru = run_lookup("крышка бака")
+        self.assertNotIn("顶盖", {h["cn"] for h in ru["hits"]})
+        head = run_lookup("крышка головки")
+        self.assertIn("头盖", {h["cn"] for h in head["hits"]})
+        head_es = run_lookup("tapa de la cabeza")
+        self.assertIn("头盖", {h["cn"] for h in head_es["hits"]})
+        row = self._cn_row("顶盖")
+        self.assertEqual(row["ru"], "крышка")
+        self.assertEqual(row["es"], "tapa")
+
+    def test_technical_one_word_still_hits(self) -> None:
+        ru = run_lookup("контактор")
+        self.assertIn("切换开关", {h["cn"] for h in ru["hits"]})
+        es = run_lookup("ruptor")
+        self.assertIn("切换开关", {h["cn"] for h in es["hits"]})
+        sel = run_lookup("избиратель")
+        self.assertIn("分接选择器", {h["cn"] for h in sel["hits"]})
+
+    def test_empty_spanish_cell_is_a_question(self) -> None:
+        r = run_lookup("检查均压罩", es="Inspeccione las tapas.")
+        self.assertTrue(any(a["cn"] == "均压罩" for a in r["ask"]))
+        self.assertEqual(r["missing_target"], [])
+        self.assertEqual(r["exit"], 0)
+
+    def test_missing_spanish_lock_fails(self) -> None:
+        r = run_lookup("切换开关芯子在油室里", es="Revise el cuerpo.")
+        missing = {m["cn"] for m in r["missing_target"]}
+        self.assertIn("切换开关芯子", missing)
+        self.assertIn("油室", missing)
+        self.assertEqual(r["exit"], 1)
+
+    def test_inflected_russian_lock_passes(self) -> None:
+        draft = "Выемную часть контактора поднимают из масляного бака контактора."
+        r = run_lookup("切换开关芯子在油室里", ru=draft)
+        missing = {m["cn"] for m in r["missing_target"]}
+        self.assertNotIn("切换开关芯子", missing)
+        self.assertNotIn("油室", missing)
+        self.assertEqual(r["exit"], 0)
+
+    def test_two_drafts_rejected(self) -> None:
+        proc = subprocess.run(
+            [
+                sys.executable,
+                str(LOOKUP),
+                "--json",
+                "--text",
+                "油室",
+                "--en",
+                "oil compartment",
+                "--ru",
+                "бак",
+            ],
+            cwd=str(ROOT),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
+        self.assertEqual(proc.returncode, 2)
 
 
 class SafetyScanTests(unittest.TestCase):
