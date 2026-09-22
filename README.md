@@ -34,6 +34,6 @@ python -m unittest tests.test_lookup
 
 ## 发布形态
 
-只发 **skillhub.cn**（`node scripts/stage-cn.mjs` 去掉 png、LICENSE、scripts、tests）。不要发讯飞 SkillHub。Grok 用本仓库根目录即可。CLI 发完后网页后台把分类改回「行业专业」、图标改回 HM。
+只发 **skillhub.cn**（`node scripts/stage-cn.mjs` 去掉 png、LICENSE、scripts、tests）。Grok 用本仓库根目录即可。CLI 发完后网页后台把分类改回「行业专业」、图标改回 HM。
 
 版本号以 `SKILL.md` 的 `version` 为准，须与 `manifest.yaml` 相同。
